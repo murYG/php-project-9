@@ -22,6 +22,7 @@
         "slim/http": "^1.4",
         "slim/php-view": "^3.4",
         "slim/flash": "^0.4.0",
-        "php-di/php-di": "^7.1"
+        "php-di/php-di": "^7.1",
+        "twbs/bootstrap": "5.3.8"
     }
 }

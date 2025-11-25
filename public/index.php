@@ -30,7 +30,7 @@ $app = AppFactory::create();
 $app->addErrorMiddleware(true, true, true);
 
 $app->get('/', function ($request, $response) {
-    return $response->write('тут');
+    return $this->get('renderer')->render($response, 'index.phtml', []);
 });
 
 $app->run();
