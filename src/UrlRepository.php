@@ -13,12 +13,46 @@ class UrlRepository
 
     public function getEntities(): array
     {
-        $sql = "SELECT * FROM urls ORDER BY created_at DESC";
+        $sql = "
+        SELECT 
+            urls.*,
+            checks.url_id,
+            checks.id as last_check_id,
+            checks.status_code,
+            checks.h1,
+            checks.title,
+            checks.description,
+            checks.created_at as check_created_at
+        FROM 
+            urls 
+            LEFT JOIN (
+                SELECT 
+                    url_checks.*
+                FROM 
+                    url_checks
+                    INNER JOIN (SELECT url_id, MAX(id) as last_check_id FROM url_checks GROUP BY url_id) as last_check
+                    ON last_check.url_id = url_checks.url_id
+                    AND last_check.last_check_id = url_checks.id                
+            ) as checks
+            ON checks.url_id = urls.id
+        ORDER BY 
+            urls.created_at DESC";
         $stmt = $this->conn->query($sql);
 
         $urls = [];
         while ($row = $stmt->fetch()) {
-            $url = new Url($row['name'], $row['created_at']);
+            if ($row['last_check_id'] !== null) {
+                $checkData = array_combine(
+                    ['status_code', 'h1', 'title', 'description'],
+                    [$row['status_code'], $row['h1'], $row['title'], $row['description']]
+                );
+                $check = new UrlCheck($row['url_id'], $checkData, $row['check_created_at']);
+                $check->setId($row['last_check_id']);
+            } else {
+                $check = null;
+            }
+
+            $url = new Url($row['name'], $row['created_at'], $check);
             $url->setId($row['id']);
             $urls[] = $url;
         }

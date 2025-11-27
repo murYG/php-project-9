@@ -13,7 +13,9 @@ use DI\Container;
 use Url\{
     Url,
     UrlRepository,
-    UrlValidator
+    UrlValidator,
+    UrlCheck,
+    UrlCheckRepository
 };
 
 session_start();
@@ -83,8 +85,12 @@ $app->get('/urls/{id}', function ($request, $response, array $args) use ($router
         return $response->withRedirect($router->urlFor('urls'));
     }
 
+    $urlCheckRepository = $this->get(UrlCheckRepository::class);
+    $checks = $urlCheckRepository->getEntities($url->getId());
+
     $params = [
         'url' => $url,
+        'checks' => $checks,
         'router' => $router,
         'flash' => $this->get('flash')->getMessages()
     ];
@@ -124,6 +130,17 @@ $app->post('/', function ($request, $response) use ($router) {
 
     $this->get('flash')->addMessage('result', $result);
     return $response->withRedirect($router->urlFor('url', ['id' => $url->getId()]));
-}); //создание url
+})->setName('create_url'); //создание url
+
+$app->post('/urls/{url_id}/checks', function ($request, $response, array $args) use ($router) {
+    $urlCheckRepository = $this->get(UrlCheckRepository::class);
+    $check = new UrlCheck($args['url_id']);
+    $urlCheckRepository->save($check);
+
+    $result = 'Страница успешно проверена';
+
+    $this->get('flash')->addMessage('result', $result);
+    return $response->withRedirect($router->urlFor('url', ['id' => $check->getUrlId()]));
+})->setName('create_check'); //создание проверки url
 
 $app->run();

@@ -15,9 +15,9 @@
 		<?php foreach ($urls as $url): ?>
 		
 			<tr>
-				<td><?=$url->getId()?></td>
+				<td><?= $url->getId() ?></td>
 				<td><a href="<?= $router->urlFor('url', ['id' => $url->getId()]) ?>"><?= $url->getName() ?></a></td>
-				<td></td>
+				<td><?= ($url->getLastCheck() === null ? '' : $url->getLastCheck()->getCreatedAt()) ?></td>
 				<td></td>
 			</tr>
 		<?php endforeach; ?>
