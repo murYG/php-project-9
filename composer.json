@@ -10,6 +10,9 @@
     "license": ["proprietary"],
 	"autoload": {
         "files": [
+			"src/Url.php",
+			"src/UrlRepository.php",
+			"src/UrlValidator.php"
         ]
     },
     "require-dev": {
@@ -23,6 +26,7 @@
         "slim/php-view": "^3.4",
         "slim/flash": "^0.4.0",
         "php-di/php-di": "^7.1",
-        "twbs/bootstrap": "5.3.8"
+        "twbs/bootstrap": "^5.3",
+        "nesbot/carbon": "^3.10"
     }
 }
