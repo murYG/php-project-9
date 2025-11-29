@@ -75,7 +75,7 @@ $customErrorHandler = function ($request, $exception) use ($app, $router) {
     }
 
     $this->get('flash')->addMessage('errors', $exception->getMessage());
-    return $response->withRedirect($router->urlFor('main'), 302);
+    return $response->withStatus(302)->withHeader('Location', $router->urlFor('main'));
 };
 
 $errorMiddleware = $app->addErrorMiddleware(true, true, true);
