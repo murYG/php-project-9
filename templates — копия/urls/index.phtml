@@ -1,0 +1,28 @@
+<?php require_once(__DIR__ . '/../header.phtml') ?>
+
+<h1>Сайты</h1>
+<div class="table-responsive">
+	<table class="table table-bordered table-hover text-nowrap" data-test="urls">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Имя</th>
+				<th>Последняя проверка</th>
+				<th>Код ответа</th>
+			</tr>
+		</thead>
+		<tbody>
+		<?php foreach ($urls as $url): ?>
+		
+			<tr>
+				<td><?= $url->getId() ?></td>
+				<td><a href="<?= $router->urlFor('url', ['id' => $url->getId()]) ?>"><?= $url->getName() ?></a></td>
+				<td><?= ($url->getLastCheck() === null ? '' : $url->getLastCheck()->getCreatedAt()) ?></td>
+				<td></td>
+			</tr>
+		<?php endforeach; ?>
+		</tbody>
+	</table>
+</div>
+
+<?php require_once(__DIR__ . '/../footer.phtml') ?>

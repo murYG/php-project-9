@@ -1,5 +1,5 @@
-<?php require_once(__DIR__ . '/../header.phtml') ?>
-
+{% extends 'template.phtml' %}
+{% block body %}
 <h1>Сайты</h1>
 <div class="table-responsive">
 	<table class="table table-bordered table-hover text-nowrap" data-test="urls">
@@ -12,17 +12,23 @@
 			</tr>
 		</thead>
 		<tbody>
-		<?php foreach ($urls as $url): ?>
-		
-			<tr>
-				<td><?= $url->getId() ?></td>
-				<td><a href="<?= $router->urlFor('url', ['id' => $url->getId()]) ?>"><?= $url->getName() ?></a></td>
-				<td><?= ($url->getLastCheck() === null ? '' : $url->getLastCheck()->getCreatedAt()) ?></td>
-				<td></td>
-			</tr>
-		<?php endforeach; ?>
+		{% for url in urls %}
+		{% if url.getLastCheck() != null %}
+		{% set lastCheck = {
+			'createdAt': url.getLastCheck().getCreatedAt(),
+			'statusCode': url.getLastCheck().getStatusCode()
+		} %}
+		{% else %}
+		{% set lastCheck = {'createdAt': '', 'statusCode': ''} %}		
+		{% endif %}
+		<tr>
+			<td>{{ url.getId() }}</td>
+			<td><a href="{{ url_for('url', {'id': url.getId()}) }}">{{ url.getName() }}</a></td>
+			<td>{{ lastCheck.createdAt }}</td>
+			<td>{{ lastCheck.statusCode }}</td>
+		</tr>
+		{% endfor %}
 		</tbody>
 	</table>
 </div>
-
-<?php require_once(__DIR__ . '/../footer.phtml') ?>
+{% endblock %}

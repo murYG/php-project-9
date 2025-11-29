@@ -9,20 +9,29 @@ if (file_exists($autoloadPath1)) {
 }
 
 use Slim\Factory\AppFactory;
+use Slim\Exception\HttpNotFoundException;
+use Slim\Views\Twig;
+use Slim\Views\TwigMiddleware;
 use DI\Container;
 use Url\{
     Url,
     UrlRepository,
     UrlValidator,
-    UrlCheck,
     UrlCheckRepository
 };
 
 session_start();
 
 $container = new Container();
-$container->set('renderer', function () {
-    return new \Slim\Views\PhpRenderer(__DIR__ . '/../templates');
+
+$container->set('twig', function ($container) {
+    return function ($request) use ($container) {
+        $view = Twig::fromRequest($request);
+        $environment = $view->getEnvironment();
+        $environment->addGlobal('flash', $container->get('flash'));
+
+        return $view;
+    };
 });
 
 $container->set('flash', function () {
@@ -47,55 +56,47 @@ $container->get(\PDO::class)->exec($initSql);
 
 AppFactory::setContainer($container);
 $app = AppFactory::create();
-$app->addErrorMiddleware(true, true, true);
+
+$twig = Twig::create(__DIR__ . '/../templates', ['cache' => false]);
+$app->add(TwigMiddleware::create($app, $twig));
 
 $router = $app->getRouteCollector()->getRouteParser();
 
-$app->get('/', function ($request, $response) use ($router) {
-    $url = $request->getParsedBodyParam('url', ['name' => '']);
+$customErrorHandler = function ($request, $exception) use ($app, $router) {
+    $response = $app->getResponseFactory()->createResponse();
 
-    $params = [
-        'url' => $url,
-        'router' => $router,
-        'flash' => $this->get('flash')->getMessages()
-    ];
-
-    return $this->get('renderer')->render($response, 'index.phtml', $params);
-})->setName('main'); //главная, форма нового url
-
-$app->get('/urls', function ($request, $response) use ($router) {
-    $urlRepository = $this->get(UrlRepository::class);
-    $urls = $urlRepository->getEntities();
-
-    $params = [
-        'urls' => $urls,
-        'router' => $router,
-        'flash' => $this->get('flash')->getMessages()
-    ];
-
-    return $this->get('renderer')->render($response, 'urls/index.phtml', $params);
-})->setName('urls'); //список urls
-
-$app->get('/urls/{id}', function ($request, $response, array $args) use ($router) {
-    $urlRepository = $this->get(UrlRepository::class);
-    $url = $urlRepository->getById($args['id']);
-
-    if ($url === null) {
-        $this->get('flash')->addMessage('result', "Сайт c идентификатором {$args['id']} не найден");
-        return $response->withRedirect($router->urlFor('urls'));
+    if ($exception instanceof HttpNotFoundException) {
+        return $this->get('twig')($request)->render($response->withStatus(404), '404.phtml', []);
     }
 
-    $urlCheckRepository = $this->get(UrlCheckRepository::class);
-    $checks = $urlCheckRepository->getEntities($url->getId());
+    $this->get('flash')->addMessage('errors', $exception->getMessage());
+    return $response->withRedirect($router->urlFor('main'));
+};
+
+$errorMiddleware = $app->addErrorMiddleware(true, true, true);
+$errorMiddleware->setDefaultErrorHandler($customErrorHandler);
+
+$app->get('/', function ($request, $response) {
+    $url = $request->getParsedBodyParam('url', ['name' => '']);
+    return $this->get('twig')($request)->render($response, 'index.phtml', ['url' => $url]);
+})->setName('main'); //главная, форма нового url
+
+$app->get('/urls', function ($request, $response) {
+    $urls = $this->get(UrlRepository::class)->getEntities();
+    return $this->get('twig')($request)->render($response, 'urls/index.phtml', ['urls' => $urls]);
+})->setName('urls'); //список urls
+
+$app->get('/urls/{id}', function ($request, $response, array $args) {
+    $url = $this->get(UrlRepository::class)->getById($args['id']);
+    if ($url === null) {
+        throw new HttpNotFoundException($request);
+    }
 
     $params = [
         'url' => $url,
-        'checks' => $checks,
-        'router' => $router,
-        'flash' => $this->get('flash')->getMessages()
+        'checks' => $url->getCheckList($this->get(UrlCheckRepository::class))
     ];
-
-    return $this->get('renderer')->render($response, 'urls/url.phtml', $params);
+    return $this->get('twig')($request)->render($response, 'urls/url.phtml', $params);
 })->setName('url'); //элемент url
 
 $app->post('/', function ($request, $response) use ($router) {
@@ -103,21 +104,17 @@ $app->post('/', function ($request, $response) use ($router) {
 
     $validator = new UrlValidator();
     $errors = $validator->validate($arUrl);
-
     if (count($errors) > 0) {
-        $params = [
-            'url' => $arUrl,
-            'router' => $router,
-            'flash' => ['validation' => $errors]
-        ];
-        return $this->get('renderer')->render($response, "index.phtml", $params);
+        foreach ($errors as $error) {
+            $this->get('flash')->addMessageNow('validation', $error);
+        }
+        return $this->get('twig')($request)->render($response->withStatus(422), "index.phtml", ['url' => $arUrl]);
     }
 
     $parseResult = parse_url($arUrl['name']);
     $name = "{$parseResult['scheme']}://{$parseResult['host']}";
 
     $urlRepository = $this->get(UrlRepository::class);
-
     $url = $urlRepository->getByName($name);
     if ($url === null) {
         $url = new Url($name);
@@ -133,14 +130,16 @@ $app->post('/', function ($request, $response) use ($router) {
 })->setName('create_url'); //создание url
 
 $app->post('/urls/{url_id}/checks', function ($request, $response, array $args) use ($router) {
-    $urlCheckRepository = $this->get(UrlCheckRepository::class);
-    $check = new UrlCheck($args['url_id']);
-    $urlCheckRepository->save($check);
+    $url = $this->get(UrlRepository::class)->getById($args['url_id']);
 
-    $result = 'Страница успешно проверена';
+    try {
+        $url->check($this->get(UrlCheckRepository::class));
+        $this->get('flash')->addMessage('result', 'Страница успешно проверена');
+    } catch (\RuntimeException $e) {
+        $this->get('flash')->addMessage('errors', $e->getMessage());
+    }
 
-    $this->get('flash')->addMessage('result', $result);
-    return $response->withRedirect($router->urlFor('url', ['id' => $check->getUrlId()]));
+    return $response->withRedirect($router->urlFor('url', ['id' => $url->getId()]));
 })->setName('create_check'); //создание проверки url
 
 $app->run();

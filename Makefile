@@ -5,7 +5,7 @@ validate:
 	composer validate	
 
 lint:
-	composer exec --verbose phpcs -- --standard=PSR12 src public templates
+	composer exec --verbose phpcs -- --standard=PSR12 src public
 
 PORT ?= 8000
 start:

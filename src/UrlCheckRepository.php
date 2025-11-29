@@ -18,13 +18,11 @@ class UrlCheckRepository
         $stmt->bindParam(':url_id', $url_id);
         $stmt->execute();
 
+        $checResultKeys = ['status_code' => '', 'h1' => '', 'title' => '', 'description' => ''];
         $checks = [];
         while ($row = $stmt->fetch()) {
-            $checkData = array_combine(
-                ['status_code', 'h1', 'title', 'description'],
-                [$row['status_code'], $row['h1'], $row['title'], $row['description']]
-            );
-            $check = new UrlCheck($row['url_id'], $checkData, $row['created_at']);
+            $checResult = array_intersect_key($row, $checResultKeys);
+            $check = new UrlCheck($row['url_id'], $row['created_at'], $checResult);
             $check->setId($row['id']);
 
             $checks[] = $check;
@@ -41,11 +39,9 @@ class UrlCheckRepository
         $stmt->execute();
 
         if ($row = $stmt->fetch()) {
-            $checkData = array_combine(
-                ['status_code', 'h1', 'title', 'description'],
-                [$row['status_code'], $row['h1'], $row['title'], $row['description']]
-            );
-            $check = new UrlCheck($row['url_id'], $checkData, $row['created_at']);
+            $checResultKeys = ['status_code' => '', 'h1' => '', 'title' => '', 'description' => ''];
+            $checResult = array_intersect_key($row, $checResultKeys);
+            $check = new UrlCheck($row['url_id'], $row['created_at'], $checResult);
             $check->setId($row['id']);
 
             return $check;
@@ -66,12 +62,12 @@ class UrlCheckRepository
     private function update(UrlCheck $check): void
     {
         $sql = "
-		UPDATE 
-			url_checks 
-		SET 
-			status_code = :status_code, h1 = :h1, title = :title, description = :description 
-		WHERE 
-			id = :id";
+        UPDATE 
+            url_checks 
+        SET 
+            status_code = :status_code, h1 = :h1, title = :title, description = :description 
+        WHERE 
+            id = :id";
         $stmt = $this->conn->prepare($sql);
 
         $id = $check->getId();
@@ -91,10 +87,10 @@ class UrlCheckRepository
     private function create(UrlCheck $check): void
     {
         $sql = "
-		INSERT INTO 
-			url_checks (url_id, status_code, h1, title, description, created_at) 
-		VALUES 
-			(:url_id, :status_code, :h1, :title, :description, :created_at)";
+        INSERT INTO 
+            url_checks (url_id, status_code, h1, title, description, created_at) 
+        VALUES 
+            (:url_id, :status_code, :h1, :title, :description, :created_at)";
         $stmt = $this->conn->prepare($sql);
 
         $url_id = $check->getUrlId();

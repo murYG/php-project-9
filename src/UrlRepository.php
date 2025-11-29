@@ -16,13 +16,12 @@ class UrlRepository
         $sql = "
         SELECT 
             urls.*,
-            checks.url_id,
-            checks.id as last_check_id,
-            checks.status_code,
-            checks.h1,
-            checks.title,
-            checks.description,
-            checks.created_at as check_created_at
+            url_checks.id as last_check_id,
+            url_checks.status_code,
+            url_checks.h1,
+            url_checks.title,
+            url_checks.description,
+            url_checks.created_at as last_check_created_at
         FROM 
             urls 
             LEFT JOIN (
@@ -33,27 +32,26 @@ class UrlRepository
                     INNER JOIN (SELECT url_id, MAX(id) as last_check_id FROM url_checks GROUP BY url_id) as last_check
                     ON last_check.url_id = url_checks.url_id
                     AND last_check.last_check_id = url_checks.id                
-            ) as checks
-            ON checks.url_id = urls.id
+            ) as url_checks
+            ON url_checks.url_id = urls.id
         ORDER BY 
-            urls.created_at DESC";
+            urls.id DESC";
         $stmt = $this->conn->query($sql);
 
+        $checResultKeys = ['status_code' => '', 'h1' => '', 'title' => '', 'description' => ''];
         $urls = [];
         while ($row = $stmt->fetch()) {
+            $url = new Url($row['name'], $row['created_at']);
+            $url->setId($row['id']);
+
             if ($row['last_check_id'] !== null) {
-                $checkData = array_combine(
-                    ['status_code', 'h1', 'title', 'description'],
-                    [$row['status_code'], $row['h1'], $row['title'], $row['description']]
-                );
-                $check = new UrlCheck($row['url_id'], $checkData, $row['check_created_at']);
+                $checResult = array_intersect_key($row, $checResultKeys);
+                $check = new UrlCheck($row['id'], $row['last_check_created_at'], $checResult);
                 $check->setId($row['last_check_id']);
-            } else {
-                $check = null;
+
+                $url->setLastCheck($check);
             }
 
-            $url = new Url($row['name'], $row['created_at'], $check);
-            $url->setId($row['id']);
             $urls[] = $url;
         }
 

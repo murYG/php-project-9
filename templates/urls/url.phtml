@@ -1,26 +1,26 @@
-<?php require_once(__DIR__ . '/../header.phtml') ?>
-
-<h1>Сайт: <?= $url->getName() ?></h1>
+{% extends 'template.phtml' %}
+{% block body %}
+<h1>Сайт: {{ url.getName() }}</h1>
 <div class="table-responsive">
 	<table class="table table-bordered table-hover text-nowrap" data-test="url">
 		<tbody>
 			<tr>
 				<td>ID</td>
-				<td><?= $url->getId() ?></td>
+				<td>{{ url.getId() }}</td>
 			</tr>
 			<tr>
 				<td>Имя</td>
-				<td><?= $url->getName() ?></td>
+				<td>{{ url.getName() }}</td>
 			</tr>
 			<tr>
 				<td>Дата создания</td>
-				<td><?= $url->getCreatedAt() ?></td>
+				<td>{{ url.getCreatedAt() }}</td>
 			</tr>
 		</tbody>
 	</table>
 </div>
 <h2 class="mt-5 mb-3">Проверки</h2>
-<form method="post" action="<?= $router->urlFor('create_check', ['url_id' => $url->getId()]) ?>">
+<form method="post" action="{{ url_for('create_check', {'url_id': url.getId()}) }}">
 	<input type="submit" class="btn btn-primary" value="Запустить проверку">
 </form>
 <table class="table table-bordered table-hover" data-test="checks">
@@ -35,17 +35,16 @@
 	</tr>
 	</thead>
 	<tbody>
-	<?php foreach($checks as $check): ?>
-		<tr>
-			<td><?=$check->getId()?></td>
-			<td><?=$check->getStatusCode()?></td>
-			<td class="text-break"><?=$check->getH1()?></td>
-			<td class="text-break"><?=$check->getTitle()?></td>
-			<td class="text-break"><?=$check->getDescription()?></td>
-			<td><?= $check->getCreatedAt() ?></td>
-		</tr>
-	<?php endforeach ?>
+	{% for check in checks %}
+	<tr>
+		<td>{{ check.getId() }}</td>
+		<td>{{ check.getStatusCode() }}</td>
+		<td class="text-break">{{ check.getH1() }}</td>
+		<td class="text-break">{{ check.getTitle() }}</td>
+		<td class="text-break">{{ check.getDescription() }}</td>
+		<td>{{ check.getCreatedAt() }}</td>
+	</tr>
+	{% endfor %}
 	</tbody>
 </table>
-
-<?php require_once(__DIR__ . '/../footer.phtml') ?>
+{% endblock %}
