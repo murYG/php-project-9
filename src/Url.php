@@ -18,7 +18,7 @@ class Url
     public function __construct(string $name, ?string $created_at = null)
     {
         $this->name = $name;
-        $this->created_at = $created_at ?? Carbon::now();
+        $this->created_at = $created_at ?? Carbon::now('Europe/Moscow');
     }
 
     public function getId(): ?int

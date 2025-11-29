@@ -61,13 +61,8 @@ class UrlCheckRepository
 
     private function update(UrlCheck $check): void
     {
-        $sql = "
-        UPDATE 
-            url_checks 
-        SET 
-            status_code = :status_code, h1 = :h1, title = :title, description = :description 
-        WHERE 
-            id = :id";
+        $sql = "UPDATE url_checks SET status_code = :status_code, 
+		h1 = :h1, title = :title, description = :description WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
 
         $id = $check->getId();
@@ -86,11 +81,8 @@ class UrlCheckRepository
 
     private function create(UrlCheck $check): void
     {
-        $sql = "
-        INSERT INTO 
-            url_checks (url_id, status_code, h1, title, description, created_at) 
-        VALUES 
-            (:url_id, :status_code, :h1, :title, :description, :created_at)";
+        $sql = "INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at) 
+		VALUES (:url_id, :status_code, :h1, :title, :description, :created_at)";
         $stmt = $this->conn->prepare($sql);
 
         $url_id = $check->getUrlId();

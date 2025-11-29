@@ -2,33 +2,33 @@
 {% block body %}
 <h1>Сайты</h1>
 <div class="table-responsive">
-	<table class="table table-bordered table-hover text-nowrap" data-test="urls">
-		<thead>
-			<tr>
-				<th>ID</th>
-				<th>Имя</th>
-				<th>Последняя проверка</th>
-				<th>Код ответа</th>
-			</tr>
-		</thead>
-		<tbody>
-		{% for url in urls %}
-		{% if url.getLastCheck() != null %}
-		{% set lastCheck = {
-			'createdAt': url.getLastCheck().getCreatedAt(),
-			'statusCode': url.getLastCheck().getStatusCode()
-		} %}
-		{% else %}
-		{% set lastCheck = {'createdAt': '', 'statusCode': ''} %}		
-		{% endif %}
-		<tr>
-			<td>{{ url.getId() }}</td>
-			<td><a href="{{ url_for('url', {'id': url.getId()}) }}">{{ url.getName() }}</a></td>
-			<td>{{ lastCheck.createdAt }}</td>
-			<td>{{ lastCheck.statusCode }}</td>
-		</tr>
-		{% endfor %}
-		</tbody>
-	</table>
+    <table class="table table-bordered table-hover text-nowrap" data-test="urls">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Имя</th>
+                <th>Последняя проверка</th>
+                <th>Код ответа</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for url in urls %}
+        {% if url.getLastCheck() != null %}
+        {% set lastCheck = {
+            'createdAt': url.getLastCheck().getCreatedAt(),
+            'statusCode': url.getLastCheck().getStatusCode()
+        } %}
+        {% else %}
+        {% set lastCheck = {'createdAt': '', 'statusCode': ''} %}
+        {% endif %}
+        <tr>
+            <td>{{ url.getId() }}</td>
+            <td><a href="{{ url_for('url', {'id': url.getId()}) }}">{{ url.getName() }}</a></td>
+            <td>{{ lastCheck.createdAt }}</td>
+            <td>{{ lastCheck.statusCode }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

@@ -14,28 +14,25 @@ class UrlRepository
     public function getEntities(): array
     {
         $sql = "
-        SELECT 
-            urls.*,
-            url_checks.id as last_check_id,
-            url_checks.status_code,
-            url_checks.h1,
-            url_checks.title,
-            url_checks.description,
-            url_checks.created_at as last_check_created_at
-        FROM 
-            urls 
-            LEFT JOIN (
-                SELECT 
-                    url_checks.*
-                FROM 
-                    url_checks
-                    INNER JOIN (SELECT url_id, MAX(id) as last_check_id FROM url_checks GROUP BY url_id) as last_check
-                    ON last_check.url_id = url_checks.url_id
-                    AND last_check.last_check_id = url_checks.id                
-            ) as url_checks
-            ON url_checks.url_id = urls.id
-        ORDER BY 
-            urls.id DESC";
+		SELECT 
+			urls.*,
+			url_checks.id as last_check_id,
+			url_checks.status_code,
+			url_checks.h1,
+			url_checks.title,
+			url_checks.description,
+			url_checks.created_at as last_check_created_at
+		FROM
+			urls 
+			LEFT JOIN (
+				SELECT url_checks.* FROM url_checks
+				INNER JOIN (SELECT url_id, MAX(id) as last_check_id FROM url_checks GROUP BY url_id) as last_check
+				ON last_check.url_id = url_checks.url_id
+				AND last_check.last_check_id = url_checks.id
+			) as url_checks
+			ON url_checks.url_id = urls.id
+		ORDER BY 
+			urls.id DESC";
         $stmt = $this->conn->query($sql);
 
         $checkResultKeys = ['status_code' => '', 'h1' => '', 'title' => '', 'description' => ''];

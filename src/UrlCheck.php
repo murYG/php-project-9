@@ -17,7 +17,7 @@ class UrlCheck
     public function __construct(int $url_id, $created_at = null, $checkResult = [])
     {
         $this->url_id = $url_id;
-        $this->created_at = $created_at ?? Carbon::now();
+        $this->created_at = $created_at ?? Carbon::now('Europe/Moscow');
 
         foreach ($checkResult as $key => $value) {
             if (property_exists($this, $key)) {

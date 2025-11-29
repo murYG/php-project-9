@@ -12,7 +12,7 @@ class UrlValidator
             return $errors;
         }
 
-        $pattern = "/^(https?:\/\/(?:(?:[a-zа-я0-9\-]+)\.)+(?:[a-zа-я]{2,}))(?:\/.*)?$/i";
+        $pattern = "/^(https?:\/\/(?:[a-zа-я0-9\-]+\.)+[a-zа-я]{2,})(?:\/.*)?$/i";
         $matches = [];
         if (!preg_match($pattern, $url['name'], $matches) || strlen($matches[1]) > 255) {
             $errors[] = "Некорректный URL";
