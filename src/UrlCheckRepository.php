@@ -21,8 +21,8 @@ class UrlCheckRepository
         $checResultKeys = ['status_code' => '', 'h1' => '', 'title' => '', 'description' => ''];
         $checks = [];
         while ($row = $stmt->fetch()) {
-            $checResult = array_intersect_key($row, $checResultKeys);
-            $check = new UrlCheck($row['url_id'], $row['created_at'], $checResult);
+            $checkResult = array_intersect_key($row, $checResultKeys);
+            $check = new UrlCheck($row['url_id'], $row['created_at'], $checkResult);
             $check->setId($row['id']);
 
             $checks[] = $check;
@@ -40,8 +40,8 @@ class UrlCheckRepository
 
         if ($row = $stmt->fetch()) {
             $checResultKeys = ['status_code' => '', 'h1' => '', 'title' => '', 'description' => ''];
-            $checResult = array_intersect_key($row, $checResultKeys);
-            $check = new UrlCheck($row['url_id'], $row['created_at'], $checResult);
+            $checkResult = array_intersect_key($row, $checResultKeys);
+            $check = new UrlCheck($row['url_id'], $row['created_at'], $checkResult);
             $check->setId($row['id']);
 
             return $check;

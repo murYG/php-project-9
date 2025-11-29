@@ -1,10 +1,7 @@
-{% set currentPath = base_path(app.request.attributes.get('_route'),
-                       app.request.attributes.get('_route_params')) %}
 {% set navLinks = {
 		'main': {'title': 'Главная', 'path': url_for('main')},
 		'urls': {'title': 'Сайты', 'path': url_for('urls')}
 	} %}
-<!DOCTYPE html>
 <html lang="ru">
 	<head>
 		<meta charset="UTF-8">
@@ -24,7 +21,7 @@
 					<ul class="navbar-nav">
 						{% for navLink in navLinks %}
 							<li class="nav-item">
-								<a class="nav-link{% if navLink.path == currentPath %} active{% endif %}" href="{{ navLink.path }}">{{ navLink.title }}</a>
+								<a class="nav-link{% if navLink.path == current_url() %} active{% endif %}" href="{{ navLink.path }}">{{ navLink.title }}</a>
 							</li>
 						{% endfor %}						
 					</ul>

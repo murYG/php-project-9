@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\TransferException;
+use DiDom\Document;
 
 class Url
 {
@@ -66,8 +67,27 @@ class Url
         } catch (TransferException $e) {
             throw new \RuntimeException("Произошла ошибка при проверке, не удалось подключиться");
         }
+        $checkResult = ['status_code' => $response->getStatusCode()];
 
-        $check = new UrlCheck($this->getId(), null, ['status_code' => $response->getStatusCode()]);
+        $document = new Document();
+        $document->loadHtml($response->getBody()->getContents());
+
+        $h1 = $document->first('h1');
+        if ($h1) {
+            $checkResult['h1'] = $h1->text();
+        }
+
+        $title = $document->first('title');
+        if ($title) {
+            $checkResult['title'] = $title->text();
+        }
+
+        $description = $document->first('meta[name="description"]');
+        if ($description) {
+            $checkResult['description'] = $description->getAttribute('content');
+        }
+
+        $check = new UrlCheck($this->getId(), null, $checkResult);
         $repo->save($check);
         $this->setLastCheck($check);
     }

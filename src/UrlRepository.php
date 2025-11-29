@@ -38,15 +38,15 @@ class UrlRepository
             urls.id DESC";
         $stmt = $this->conn->query($sql);
 
-        $checResultKeys = ['status_code' => '', 'h1' => '', 'title' => '', 'description' => ''];
+        $checkResultKeys = ['status_code' => '', 'h1' => '', 'title' => '', 'description' => ''];
         $urls = [];
         while ($row = $stmt->fetch()) {
             $url = new Url($row['name'], $row['created_at']);
             $url->setId($row['id']);
 
             if ($row['last_check_id'] !== null) {
-                $checResult = array_intersect_key($row, $checResultKeys);
-                $check = new UrlCheck($row['id'], $row['last_check_created_at'], $checResult);
+                $checkResult = array_intersect_key($row, $checkResultKeys);
+                $check = new UrlCheck($row['id'], $row['last_check_created_at'], $checkResult);
                 $check->setId($row['last_check_id']);
 
                 $url->setLastCheck($check);

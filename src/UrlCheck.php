@@ -14,12 +14,12 @@ class UrlCheck
     private ?string $description = null;
     private ?string $created_at = null;
 
-    public function __construct(int $url_id, $created_at = null, $checResult = [])
+    public function __construct(int $url_id, $created_at = null, $checkResult = [])
     {
         $this->url_id = $url_id;
         $this->created_at = $created_at ?? Carbon::now();
 
-        foreach ($checResult as $key => $value) {
+        foreach ($checkResult as $key => $value) {
             if (property_exists($this, $key)) {
                 $this->$key = $value;
             }
