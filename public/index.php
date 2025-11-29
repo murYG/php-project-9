@@ -8,8 +8,6 @@ if (file_exists($autoloadPath1)) {
     require_once $autoloadPath2;
 }
 
-use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Factory\AppFactory;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Views\Twig;
@@ -41,11 +39,12 @@ $container->set('flash', function () {
 });
 
 $container->set(\PDO::class, function () {
-    if (!getenv('DATABASE_URL')) {
+    $DATABASE_URL = getenv('DATABASE_URL');
+    if (empty($DATABASE_URL)) {
         throw new \Exception('Не задана строка подключения');
     }
 
-    $databaseUrl = parse_url(getenv('DATABASE_URL'));
+    $databaseUrl = parse_url((string)$DATABASE_URL);
     $username = $databaseUrl['user'];
     $password = $databaseUrl['pass'];
     $host = $databaseUrl['host'];
@@ -53,7 +52,6 @@ $container->set(\PDO::class, function () {
 
     $conn = new \PDO("pgsql:dbname=$dbName;host=$host", $username, $password);
     $conn->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     return $conn;
 });
 
@@ -69,7 +67,7 @@ $app->add(TwigMiddleware::create($app, $twig));
 
 $router = $app->getRouteCollector()->getRouteParser();
 
-$customErrorHandler = function (Request $request, \Throwable $exception) use ($app, $router) {
+$customErrorHandler = function ($request, $exception) use ($app, $router) {
     $response = $app->getResponseFactory()->createResponse();
 
     if ($exception instanceof HttpNotFoundException) {
@@ -77,7 +75,7 @@ $customErrorHandler = function (Request $request, \Throwable $exception) use ($a
     }
 
     $this->get('flash')->addMessage('errors', $exception->getMessage());
-    return $response->withRedirect($router->urlFor('main'));
+    return $response->withRedirect($router->urlFor('main'), 302);
 };
 
 $errorMiddleware = $app->addErrorMiddleware(true, true, true);
@@ -133,7 +131,7 @@ $app->post('/urls', function ($request, $response) use ($router) {
     }
 
     $this->get('flash')->addMessage('result', $result);
-    return $response->withRedirect($router->urlFor('url', ['id' => $url->getId()]));
+    return $response->withRedirect($router->urlFor('url', ['id' => $url->getId()]), 302);
 })->setName('create_url'); //создание url
 
 $app->post('/urls/{url_id}/checks', function ($request, $response, array $args) use ($router) {
@@ -146,7 +144,7 @@ $app->post('/urls/{url_id}/checks', function ($request, $response, array $args) 
         $this->get('flash')->addMessage('errors', $e->getMessage());
     }
 
-    return $response->withRedirect($router->urlFor('url', ['id' => $url->getId()]));
+    return $response->withRedirect($router->urlFor('url', ['id' => $url->getId()]), 302);
 })->setName('create_check'); //создание проверки url
 
 $app->run();

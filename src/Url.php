@@ -59,7 +59,7 @@ class Url
     public function check(UrlCheckRepository $repo): void
     {
         if (!$this->exists()) {
-            throw \Exception('url не записан');
+            throw new \Exception('url не записан');
         }
 
         $client = new Client(['base_uri' => $this->getName()]);
@@ -77,14 +77,10 @@ class Url
         $document->loadHtml($response->getBody()->getContents());
 
         $h1 = $document->first('h1');
-        if ($h1 !== null) {
-            $checkResult['h1'] = $h1->text();
-        }
+        $checkResult['h1'] = optional($h1)->text();
 
         $title = $document->first('title');
-        if ($title != null) {
-            $checkResult['title'] = $title->text();
-        }
+        $checkResult['title'] = optional($title)->text();
 
         $description = $document->first('meta[name="description"]');
         if ($description) {
@@ -99,7 +95,7 @@ class Url
     public function getCheckList(UrlCheckRepository $repo): array
     {
         if (!$this->exists()) {
-            throw \Exception('url не записан');
+            throw new \Exception('url не записан');
         }
 
         return $repo->getEntities((int)$this->getId());

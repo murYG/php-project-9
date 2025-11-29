@@ -30,6 +30,7 @@
         "nesbot/carbon": "^3.10",
         "guzzlehttp/guzzle": "^7.0",
         "slim/twig-view": "^3.4",
-        "imangazaliev/didom": "^2.0"
+        "imangazaliev/didom": "^2.0",
+        "laravel/helpers": "^1.8"
     }
 }
