@@ -99,7 +99,7 @@ $app->get('/urls/{id}', function ($request, $response, array $args) {
     return $this->get('twig')($request)->render($response, 'urls/url.phtml', $params);
 })->setName('url'); //элемент url
 
-$app->post('/', function ($request, $response) use ($router) {
+$app->post('/urls', function ($request, $response) use ($router) {
     $arUrl = $request->getParsedBodyParam('url');
 
     $validator = new UrlValidator();
