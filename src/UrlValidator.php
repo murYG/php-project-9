@@ -6,7 +6,7 @@ use Valitron\Validator;
 
 class UrlValidator
 {
-    private ?Validator $validator;
+    private Validator $validator;
 
     public function validate(array $url): bool
     {
