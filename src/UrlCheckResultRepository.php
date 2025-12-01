@@ -1,8 +1,8 @@
 <?php
 
-namespace Url;
+namespace PageAnalyzer;
 
-class UrlCheckRepository
+class UrlCheckResultRepository
 {
     private \PDO $conn;
 
@@ -22,7 +22,7 @@ class UrlCheckRepository
         $checks = [];
         while ($row = $stmt->fetch()) {
             $checkResult = array_intersect_key($row, $checResultKeys);
-            $check = new UrlCheck($row['url_id'], $row['created_at'], $checkResult);
+            $check = new UrlCheckResult($row['url_id'], $row['created_at'], $checkResult);
             $check->setId($row['id']);
 
             $checks[] = $check;
@@ -31,7 +31,7 @@ class UrlCheckRepository
         return $checks;
     }
 
-    public function find(int $id): ?UrlCheck
+    public function find(int $id): ?UrlCheckResult
     {
         $sql = "SELECT * FROM url_checks WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
@@ -41,7 +41,7 @@ class UrlCheckRepository
         if ($row = $stmt->fetch()) {
             $checResultKeys = ['status_code' => '', 'h1' => '', 'title' => '', 'description' => ''];
             $checkResult = array_intersect_key($row, $checResultKeys);
-            $check = new UrlCheck($row['url_id'], $row['created_at'], $checkResult);
+            $check = new UrlCheckResult($row['url_id'], $row['created_at'], $checkResult);
             $check->setId($row['id']);
 
             return $check;
@@ -50,7 +50,7 @@ class UrlCheckRepository
         return null;
     }
 
-    public function save(UrlCheck $check): void
+    public function save(UrlCheckResult $check): void
     {
         if ($check->exists()) {
             $this->update($check);
@@ -59,7 +59,7 @@ class UrlCheckRepository
         }
     }
 
-    private function update(UrlCheck $check): void
+    private function update(UrlCheckResult $check): void
     {
         $sql = "UPDATE url_checks SET status_code = :status_code, 
 		h1 = :h1, title = :title, description = :description WHERE id = :id";
@@ -79,7 +79,7 @@ class UrlCheckRepository
         $stmt->execute();
     }
 
-    private function create(UrlCheck $check): void
+    private function create(UrlCheckResult $check): void
     {
         $sql = "INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at) 
 		VALUES (:url_id, :status_code, :h1, :title, :description, :created_at)";

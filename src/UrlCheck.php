@@ -1,73 +1,55 @@
 <?php
 
-namespace Url;
+namespace PageAnalyzer;
 
-use Carbon\Carbon;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ConnectException;
+use DiDom\Document;
 
 class UrlCheck
 {
-    private ?int $id = null;
-    private ?int $url_id = null;
-    private ?int $status_code = null;
-    private ?string $h1 = null;
-    private ?string $title = null;
-    private ?string $description = null;
-    private ?string $created_at = null;
+    private Url $url;
+    private UrlCheckResultRepository $repo;
 
-    public function __construct(int $url_id, ?string $created_at = null, array $checkResult = [])
+    public function __construct(Url $url, UrlCheckResultRepository $repo)
     {
-        $this->url_id = $url_id;
-        $this->created_at = $created_at ?? Carbon::now('Europe/Moscow');
-
-        foreach ($checkResult as $key => $value) {
-            if (property_exists($this, $key)) {
-                $this->$key = $value;
-            }
+        if (!$url->exists()) {
+            throw new \Exception('url не записан');
         }
+
+        $this->url = $url;
+        $this->repo = $repo;
     }
 
-    public function getId(): ?int
+    public function check(): void
     {
-        return $this->id;
-    }
+        $client = new Client(['base_uri' => $this->url->getName()]);
 
-    public function getUrlId(): ?int
-    {
-        return $this->url_id;
-    }
+        try {
+            $response = $client->request('GET', '');
+        } catch (RequestException $e) {
+            $response = $e->getResponse();
+        } catch (ConnectException $e) {
+            throw new \RuntimeException("Произошла ошибка при проверке, не удалось подключиться");
+        }
 
-    public function getStatusCode(): ?string
-    {
-        return $this->status_code;
-    }
+        $checkResult = ['status_code' => $response->getStatusCode()];
 
-    public function getH1(): ?string
-    {
-        return $this->h1;
-    }
+        $document = new Document($response->getBody()->getContents());
 
-    public function getTitle(): ?string
-    {
-        return $this->title;
-    }
+        $h1 = $document->first('h1');
+        $checkResult['h1'] = optional($h1)->text();
 
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
+        $title = $document->first('title');
+        $checkResult['title'] = optional($title)->text();
 
-    public function getCreatedAt(): ?string
-    {
-        return $this->created_at;
-    }
+        $description = $document->first('meta[name="description"]');
+        if ($description) {
+            $checkResult['description'] = $description->getAttribute('content');
+        }
 
-    public function setId(int $id): void
-    {
-        $this->id = $id;
-    }
-
-    public function exists(): bool
-    {
-        return !is_null($this->getId());
+        $check = new UrlCheckResult((int)$this->url->getId(), null, $checkResult);
+        $this->repo->save($check);
     }
 }

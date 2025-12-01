@@ -9,13 +9,9 @@
     ],
     "license": ["proprietary"],
 	"autoload": {
-        "files": [
-			"src/Url.php",
-			"src/UrlRepository.php",
-			"src/UrlValidator.php",
-			"src/UrlCheck.php",
-			"src/UrlCheckRepository.php"
-        ]
+        "psr-4": {
+            "PageAnalyzer\\": "src/"
+        }
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "^4.0"
@@ -31,6 +27,7 @@
         "guzzlehttp/guzzle": "^7.0",
         "slim/twig-view": "^3.4",
         "imangazaliev/didom": "^2.0",
-        "laravel/helpers": "^1.8"
+        "laravel/helpers": "^1.8",
+        "vlucas/valitron": "^1.4"
     }
 }

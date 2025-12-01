@@ -1,23 +1,18 @@
 <?php
 
-$autoloadPath1 = __DIR__ . '/../../../autoload.php';
-$autoloadPath2 = __DIR__ . '/../vendor/autoload.php';
-if (file_exists($autoloadPath1)) {
-    require_once $autoloadPath1;
-} else {
-    require_once $autoloadPath2;
-}
+require __DIR__ . '/../vendor/autoload.php';
 
 use Slim\Factory\AppFactory;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 use DI\Container;
-use Url\{
+use PageAnalyzer\{
     Url,
     UrlRepository,
+    UrlCheckResultRepository,
     UrlValidator,
-    UrlCheckRepository
+    UrlCheck
 };
 
 session_start();
@@ -55,10 +50,6 @@ $container->set(\PDO::class, function () {
     return $conn;
 });
 
-$initFilePath = implode('/', [dirname(__DIR__), 'database.sql']);
-$initSql = file_get_contents($initFilePath);
-$container->get(\PDO::class)->exec($initSql);
-
 AppFactory::setContainer($container);
 $app = AppFactory::create();
 
@@ -71,7 +62,7 @@ $customErrorHandler = function ($request, $exception) use ($app, $router) {
     $response = $app->getResponseFactory()->createResponse();
 
     if ($exception instanceof HttpNotFoundException) {
-        return $this->get('twig')($request)->render($response->withStatus(404), '404.phtml', []);
+        return $this->get('twig')($request)->render($response->withStatus(404), '404.twig', []);
     }
 
     $this->get('flash')->addMessage('errors', $exception->getMessage());
@@ -83,37 +74,33 @@ $errorMiddleware->setDefaultErrorHandler($customErrorHandler);
 
 $app->get('/', function ($request, $response) {
     $url = $request->getParsedBodyParam('url', ['name' => '']);
-    return $this->get('twig')($request)->render($response, 'index.phtml', ['url' => $url]);
+    return $this->get('twig')($request)->render($response, 'index.twig', ['url' => $url]);
 })->setName('main'); //главная, форма нового url
 
 $app->get('/urls', function ($request, $response) {
     $urls = $this->get(UrlRepository::class)->getEntities();
-    return $this->get('twig')($request)->render($response, 'urls/index.phtml', ['urls' => $urls]);
+    return $this->get('twig')($request)->render($response, 'urls/index.twig', ['urls' => $urls]);
 })->setName('urls'); //список urls
 
-$app->get('/urls/{id}', function ($request, $response, array $args) {
+$app->get('/urls/{id:[0-9]+}', function ($request, $response, array $args) {
     $url = $this->get(UrlRepository::class)->getById($args['id']);
     if ($url === null) {
         throw new HttpNotFoundException($request);
     }
 
-    $params = [
-        'url' => $url,
-        'checks' => $url->getCheckList($this->get(UrlCheckRepository::class))
-    ];
-    return $this->get('twig')($request)->render($response, 'urls/url.phtml', $params);
+    $check = $this->get(UrlCheckResultRepository::class)->getEntities($url->getId());
+
+    $params = ['url' => $url, 'checks' => $check];
+    return $this->get('twig')($request)->render($response, 'urls/show.twig', $params);
 })->setName('url'); //элемент url
 
 $app->post('/urls', function ($request, $response) use ($router) {
     $arUrl = $request->getParsedBodyParam('url');
 
     $validator = new UrlValidator();
-    $errors = $validator->validate($arUrl);
-    if (count($errors) > 0) {
-        foreach ($errors as $error) {
-            $this->get('flash')->addMessageNow('validation', $error);
-        }
-        return $this->get('twig')($request)->render($response->withStatus(422), "index.phtml", ['url' => $arUrl]);
+    if (!$validator->validate($arUrl)) {
+        $this->get('flash')->addMessageNow('validation', implode("\n", $validator->errors()));
+        return $this->get('twig')($request)->render($response->withStatus(422), "index.twig", ['url' => $arUrl]);
     }
 
     $parseResult = parse_url($arUrl['name']);
@@ -134,11 +121,12 @@ $app->post('/urls', function ($request, $response) use ($router) {
     return $response->withRedirect($router->urlFor('url', ['id' => $url->getId()]), 302);
 })->setName('create_url'); //создание url
 
-$app->post('/urls/{url_id}/checks', function ($request, $response, array $args) use ($router) {
+$app->post('/urls/{url_id:[0-9]+}/checks', function ($request, $response, array $args) use ($router) {
     $url = $this->get(UrlRepository::class)->getById($args['url_id']);
+    $urlCheck = new UrlCheck($url, $this->get(UrlCheckResultRepository::class));
 
     try {
-        $url->check($this->get(UrlCheckRepository::class));
+        $urlCheck->check();
         $this->get('flash')->addMessage('result', 'Страница успешно проверена');
     } catch (\RuntimeException $e) {
         $this->get('flash')->addMessage('errors', $e->getMessage());

@@ -1,58 +1,56 @@
 <?php
 
-namespace Url;
+namespace PageAnalyzer;
+
+use PDO;
 
 class UrlRepository
 {
-    private \PDO $conn;
+    private PDO $conn;
 
-    public function __construct(\PDO $conn)
+    public function __construct(PDO $conn)
     {
         $this->conn = $conn;
     }
 
     public function getEntities(): array
     {
-        $sql = "SELECT 
-            urls.*,
-            url_checks.id as last_check_id,
-            url_checks.status_code,
-            url_checks.h1,
-            url_checks.title,
-            url_checks.description,
-            url_checks.created_at as last_check_created_at
-        FROM
-            urls 
-            LEFT JOIN (
-                SELECT url_checks.* FROM url_checks
-                INNER JOIN (SELECT url_id, MAX(id) as last_check_id FROM url_checks GROUP BY url_id) as last_check
-                ON last_check.url_id = url_checks.url_id
-                AND last_check.last_check_id = url_checks.id
-            ) as url_checks
-            ON url_checks.url_id = urls.id
-        ORDER BY 
-            urls.id DESC";
+        $sql = "
+        SELECT DISTINCT ON (url_id)
+            url_id,
+            id,
+            status_code,
+            h1,
+            title,
+            description,
+            created_at
+        FROM url_checks 
+        ORDER BY url_id, id DESC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        $checks = $stmt->fetchAll(PDO::FETCH_GROUP);
+
+        $sql = "SELECT id, name, created_at FROM urls ORDER BY id DESC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
 
         $checkResultKeys = ['status_code' => '', 'h1' => '', 'title' => '', 'description' => ''];
-        $urls = [];
-        while ($row = $stmt->fetch()) {
-            $url = new Url($row['name'], $row['created_at']);
-            $url->setId($row['id']);
+        return $stmt->fetchAll(PDO::FETCH_FUNC, function ($id, $name, $created_at) use ($checks, $checkResultKeys) {
+            $url = new Url($name, $created_at);
+            $url->setId($id);
 
-            if ($row['last_check_id'] !== null) {
-                $checkResult = array_intersect_key($row, $checkResultKeys);
-                $check = new UrlCheck($row['id'], $row['last_check_created_at'], $checkResult);
-                $check->setId($row['last_check_id']);
+            if ($checks[$id] !== null) {
+                $checkRow = $checks[$id][0];
+                $checkResult = array_intersect_key($checkRow, $checkResultKeys);
+
+                $check = new UrlCheckResult($id, $checkRow['created_at'], $checkResult);
+                $check->setId($checkRow['id']);
 
                 $url->setLastCheck($check);
             }
 
-            $urls[] = $url;
-        }
-
-        return $urls;
+            return $url;
+        });
     }
 
     public function getById(int $id): ?Url

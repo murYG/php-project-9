@@ -1,23 +1,26 @@
 <?php
 
-namespace Url;
+namespace PageAnalyzer;
+
+use Valitron\Validator;
 
 class UrlValidator
 {
-    public function validate(array $url): array
+    private ?Validator $validator;
+
+    public function validate(array $url): bool
     {
-        $errors = [];
-        if (empty($url['name'])) {
-            $errors[] = "URL не должен быть пустым";
-            return $errors;
-        }
+        $this->validator = new Validator($url);
+        $this->validator->stopOnFirstFail(true);
+        $this->validator->rule('required', 'name')->message("URL не должен быть пустым");
+        $this->validator->rule('lengthMax', 'name', 255)->message("Некорректный URL");
+        $this->validator->rule('url', 'name')->message("Некорректный URL");
 
-        $pattern = "/^(https?:\/\/(?:[a-zа-я0-9\-]+\.)+[a-zа-я]{2,})(?:\/.*)?$/i";
-        $matches = [];
-        if (!preg_match($pattern, $url['name'], $matches) || strlen($matches[1]) > 255) {
-            $errors[] = "Некорректный URL";
-        }
+        return $this->validator->validate();
+    }
 
-        return $errors;
+    public function errors()
+    {
+        return is_null($this->validator) ? [] : $this->validator->errors('name');
     }
 }

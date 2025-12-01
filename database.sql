@@ -8,8 +8,9 @@ CREATE TABLE IF NOT EXISTS url_checks (
 	id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 	url_id INTEGER REFERENCES urls (id) NOT NULL,
 	status_code INTEGER,
-	h1 VARCHAR(255) NULL,
-	title VARCHAR(255) NULL,
+	h1 VARCHAR(1000) NULL,
+	title TEXT NULL,
 	description TEXT NULL,
 	created_at TIMESTAMP DEFAULT NOW()
 );
+CREATE INDEX IF NOT EXISTS url_checks__url_id__index ON url_checks (url_id);
