@@ -27,7 +27,7 @@ class UrlCheck
         $client = new Client(['base_uri' => $this->url->getName()]);
 
         try {
-            $response = $client->request('GET', '/asdfasdf');
+            $response = $client->request('GET', '');
         } catch (RequestException $e) {
             if (!$e->hasResponse()) {
                 throw new \RuntimeException("Произошла ошибка при проверке, не удалось подключиться");
