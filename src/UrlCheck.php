@@ -29,7 +29,7 @@ class UrlCheck
         try {
             $response = $client->request('GET', '');
         } catch (RequestException $e) {
-            if (!$e->hasResponse()) {
+            if (!$e->hasResponse() || $e->getResponse() === null) {
                 throw new \RuntimeException("Произошла ошибка при проверке, не удалось подключиться");
             }
             $response = $e->getResponse();

@@ -21,6 +21,6 @@ class UrlValidator
 
     public function errors()
     {
-        return is_null($this->validator) ? [] : $this->validator->errors('name');
+        return $this->validator->errors('name');
     }
 }
