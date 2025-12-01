@@ -19,13 +19,13 @@ jobs:
         with:
           fetch-depth: 0
       - name: Setup PHP with Xdebug
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@v2052987
         with:
           php-version: '8.3'
           coverage: xdebug
       - name: Install dependencies with composer
         run: composer update --no-ansi --no-interaction --no-progress
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v6
+        uses: SonarSource/sonarqube-scan-action@016cabf33a6b7edf0733e179a03ad408ad4e88ba
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
