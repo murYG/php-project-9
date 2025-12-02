@@ -13,17 +13,18 @@
         </thead>
         <tbody>
         {% for url in urls %}
-        {% if url.getLastCheck() != null %}
+		{% set urlId = url.getId() %}
+        {% if checks[ urlId ] is defined %}
         {% set lastCheck = {
-            'createdAt': url.getLastCheck().getCreatedAt(),
-            'statusCode': url.getLastCheck().getStatusCode()
+            'createdAt': checks[ urlId ].getCreatedAt(),
+            'statusCode': checks[ urlId ].getStatusCode()
         } %}
         {% else %}
         {% set lastCheck = {'createdAt': '', 'statusCode': ''} %}
         {% endif %}
         <tr>
-            <td>{{ url.getId() }}</td>
-            <td><a href="{{ url_for('url', {'id': url.getId()}) }}">{{ url.getName() }}</a></td>
+            <td>{{ urlId }}</td>
+            <td><a href="{{ url_for('url', {'id': urlId}) }}">{{ url.getName() }}</a></td>
             <td>{{ lastCheck.createdAt }}</td>
             <td>{{ lastCheck.statusCode }}</td>
         </tr>

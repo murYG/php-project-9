@@ -1,8 +1,9 @@
 <?php
 
-namespace PageAnalyzer;
+namespace PageAnalyzer\Repository;
 
 use PDO;
+use PageAnalyzer\Entity\Url;
 
 class UrlRepository
 {
@@ -15,42 +16,18 @@ class UrlRepository
 
     public function getEntities(): array
     {
-        $sql = "
-        SELECT DISTINCT ON (url_id)
-            url_id,
-            id,
-            status_code,
-            h1,
-            title,
-            description,
-            created_at
-        FROM url_checks 
-        ORDER BY url_id, id DESC";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute();
-        $checks = $stmt->fetchAll(PDO::FETCH_GROUP);
-
         $sql = "SELECT id, name, created_at FROM urls ORDER BY id DESC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
 
-        $checkResultKeys = ['status_code' => '', 'h1' => '', 'title' => '', 'description' => ''];
-        return $stmt->fetchAll(PDO::FETCH_FUNC, function ($id, $name, $created_at) use ($checks, $checkResultKeys) {
+        $result = $stmt->fetchAll(PDO::FETCH_FUNC, function ($id, $name, $created_at) {
             $url = new Url($name, $created_at);
             $url->setId($id);
 
-            if ($checks[$id] !== null) {
-                $checkRow = $checks[$id][0];
-                $checkResult = array_intersect_key($checkRow, $checkResultKeys);
-
-                $check = new UrlCheckResult($id, $checkRow['created_at'], $checkResult);
-                $check->setId($checkRow['id']);
-
-                $url->setLastCheck($check);
-            }
-
             return $url;
         });
+
+        return $result;
     }
 
     public function getById(int $id): ?Url

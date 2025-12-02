@@ -1,12 +1,15 @@
 <?php
 
-namespace PageAnalyzer;
+namespace PageAnalyzer\Repository;
 
-class UrlCheckResultRepository
+use PDO;
+use PageAnalyzer\Entity\UrlCheckResult;
+
+class UrlCheckRepository
 {
-    private \PDO $conn;
+    private PDO $conn;
 
-    public function __construct(\PDO $conn)
+    public function __construct(PDO $conn)
     {
         $this->conn = $conn;
     }
@@ -18,17 +21,23 @@ class UrlCheckResultRepository
         $stmt->bindParam(':url_id', $url_id);
         $stmt->execute();
 
-        $checResultKeys = ['status_code' => '', 'h1' => '', 'title' => '', 'description' => ''];
-        $checks = [];
-        while ($row = $stmt->fetch()) {
-            $checkResult = array_intersect_key($row, $checResultKeys);
-            $check = new UrlCheckResult($row['url_id'], $row['created_at'], $checkResult);
-            $check->setId($row['id']);
+        $result = $stmt->fetchAll(PDO::FETCH_FUNC, [UrlCheckResult::class, 'fromDataBaseRow']);
+        return $result;
+    }
 
-            $checks[] = $check;
-        }
+    public function findLatestChecks(): array
+    {
+        $sql = "
+        SELECT DISTINCT ON (url_id)
+            url_id,
+            *
+        FROM url_checks 
+        ORDER BY url_id, id DESC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
 
-        return $checks;
+        $result = $stmt->fetchAll(PDO::FETCH_FUNC | PDO::FETCH_GROUP, [UrlCheckResult::class, 'fromDataBaseRow']);
+        return array_combine(array_keys($result), array_column($result, 0));
     }
 
     public function find(int $id): ?UrlCheckResult
@@ -62,7 +71,7 @@ class UrlCheckResultRepository
     private function update(UrlCheckResult $check): void
     {
         $sql = "UPDATE url_checks SET status_code = :status_code, 
-		h1 = :h1, title = :title, description = :description WHERE id = :id";
+        h1 = :h1, title = :title, description = :description WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
 
         $id = $check->getId();
@@ -82,7 +91,7 @@ class UrlCheckResultRepository
     private function create(UrlCheckResult $check): void
     {
         $sql = "INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at) 
-		VALUES (:url_id, :status_code, :h1, :title, :description, :created_at)";
+        VALUES (:url_id, :status_code, :h1, :title, :description, :created_at)";
         $stmt = $this->conn->prepare($sql);
 
         $url_id = $check->getUrlId();

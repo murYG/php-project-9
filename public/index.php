@@ -8,11 +8,11 @@ use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 use DI\Container;
 use PageAnalyzer\{
-    Url,
-    UrlRepository,
-    UrlCheckResultRepository,
-    UrlValidator,
-    UrlCheck
+    Entity\Url,
+    Repository\UrlRepository,
+    Repository\UrlCheckRepository,
+    Service\UrlValidator,
+    Service\UrlCheck
 };
 
 session_start();
@@ -79,7 +79,9 @@ $app->get('/', function ($request, $response) {
 
 $app->get('/urls', function ($request, $response) {
     $urls = $this->get(UrlRepository::class)->getEntities();
-    return $this->get('twig')($request)->render($response, 'urls/index.twig', ['urls' => $urls]);
+    $checks = $this->get(UrlCheckRepository::class)->findLatestChecks();
+
+    return $this->get('twig')($request)->render($response, 'urls/index.twig', ['urls' => $urls, 'checks' => $checks]);
 })->setName('urls'); //список urls
 
 $app->get('/urls/{id:[0-9]+}', function ($request, $response, array $args) {
@@ -87,8 +89,7 @@ $app->get('/urls/{id:[0-9]+}', function ($request, $response, array $args) {
     if ($url === null) {
         throw new HttpNotFoundException($request);
     }
-
-    $check = $this->get(UrlCheckResultRepository::class)->getEntities($url->getId());
+    $check = $this->get(UrlCheckRepository::class)->getEntities($url->getId());
 
     $params = ['url' => $url, 'checks' => $check];
     return $this->get('twig')($request)->render($response, 'urls/show.twig', $params);
@@ -111,19 +112,17 @@ $app->post('/urls', function ($request, $response) use ($router) {
     if ($url === null) {
         $url = new Url($name);
         $urlRepository->save($url);
-
-        $result = 'Страница успешно добавлена';
+        $this->get('flash')->addMessage('result', 'Страница успешно добавлена');
     } else {
-        $result = 'Страница уже существует';
+        $this->get('flash')->addMessage('result', 'Страница уже существует');
     }
 
-    $this->get('flash')->addMessage('result', $result);
     return $response->withRedirect($router->urlFor('url', ['id' => $url->getId()]), 302);
 })->setName('create_url'); //создание url
 
 $app->post('/urls/{url_id:[0-9]+}/checks', function ($request, $response, array $args) use ($router) {
     $url = $this->get(UrlRepository::class)->getById($args['url_id']);
-    $urlCheck = new UrlCheck($url, $this->get(UrlCheckResultRepository::class));
+    $urlCheck = new UrlCheck($url, $this->get(UrlCheckRepository::class));
 
     try {
         $urlCheck->check();

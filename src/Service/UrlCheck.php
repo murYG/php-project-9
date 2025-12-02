@@ -1,18 +1,21 @@
 <?php
 
-namespace PageAnalyzer;
+namespace PageAnalyzer\Service;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ConnectException;
 use DiDom\Document;
+use PageAnalyzer\Entity\Url;
+use PageAnalyzer\Entity\UrlCheckResult;
+use PageAnalyzer\Repository\UrlCheckRepository;
 
 class UrlCheck
 {
     private Url $url;
-    private UrlCheckResultRepository $repo;
+    private UrlCheckRepository $repo;
 
-    public function __construct(Url $url, UrlCheckResultRepository $repo)
+    public function __construct(Url $url, UrlCheckRepository $repo)
     {
         if (!$url->exists()) {
             throw new \Exception('url не записан');

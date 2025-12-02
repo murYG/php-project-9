@@ -1,6 +1,6 @@
 <?php
 
-namespace PageAnalyzer;
+namespace PageAnalyzer\Service;
 
 use Valitron\Validator;
 

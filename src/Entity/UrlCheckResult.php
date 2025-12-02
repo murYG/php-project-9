@@ -1,6 +1,6 @@
 <?php
 
-namespace PageAnalyzer;
+namespace PageAnalyzer\Entity;
 
 use Carbon\Carbon;
 
@@ -24,6 +24,23 @@ class UrlCheckResult
                 $this->$key = $value;
             }
         }
+    }
+
+    public static function fromDataBaseRow(
+        $id,
+        $url_id,
+        $status_code,
+        $h1,
+        $title,
+        $description,
+        $created_at
+    ): UrlCheckResult {
+        $checkResult = compact('status_code', 'h1', 'title', 'description');
+
+        $check = new UrlCheckResult($url_id, $created_at, $checkResult);
+        $check->setId($id);
+
+        return $check;
     }
 
     public function getId(): ?int

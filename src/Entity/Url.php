@@ -1,6 +1,6 @@
 <?php
 
-namespace PageAnalyzer;
+namespace PageAnalyzer\Entity;
 
 use Carbon\Carbon;
 
@@ -9,7 +9,6 @@ class Url
     private ?int $id = null;
     private string $name;
     private string $created_at;
-    private ?UrlCheckResult $last_check = null;
 
     public function __construct(string $name, ?string $created_at = null)
     {
@@ -32,19 +31,9 @@ class Url
         return $this->created_at;
     }
 
-    public function getLastCheck(): ?UrlCheckResult
-    {
-        return $this->last_check;
-    }
-
     public function setId(int $id): void
     {
         $this->id = $id;
-    }
-
-    public function setLastCheck(UrlCheckResult $check): void
-    {
-        $this->last_check = $check;
     }
 
     public function exists(): bool
