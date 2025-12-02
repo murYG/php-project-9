@@ -27,13 +27,13 @@ class UrlCheckResult
     }
 
     public static function fromDataBaseRow(
-        $id,
-        $url_id,
-        $status_code,
-        $h1,
-        $title,
-        $description,
-        $created_at
+        int $id,
+        int $url_id,
+        ?int $status_code,
+        ?string $h1,
+        ?string $title,
+        ?string $description,
+        string $created_at
     ): UrlCheckResult {
         $checkResult = compact('status_code', 'h1', 'title', 'description');
 

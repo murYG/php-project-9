@@ -34,12 +34,12 @@ $container->set('flash', function () {
 });
 
 $container->set(\PDO::class, function () {
-    $DATABASE_URL = getenv('DATABASE_URL');
-    if (empty($DATABASE_URL)) {
+    $dataBaseUrl = getenv('DATABASE_URL');
+    if (empty($dataBaseUrl)) {
         throw new \Exception('Не задана строка подключения');
     }
 
-    $databaseUrl = parse_url((string)$DATABASE_URL);
+    $databaseUrl = parse_url((string)$dataBaseUrl);
     $username = $databaseUrl['user'];
     $password = $databaseUrl['pass'];
     $host = $databaseUrl['host'];

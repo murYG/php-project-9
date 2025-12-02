@@ -31,7 +31,7 @@ class UrlCheckRepository
         SELECT DISTINCT ON (url_id)
             url_id,
             *
-        FROM url_checks 
+        FROM url_checks
         ORDER BY url_id, id DESC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
@@ -70,7 +70,7 @@ class UrlCheckRepository
 
     private function update(UrlCheckResult $check): void
     {
-        $sql = "UPDATE url_checks SET status_code = :status_code, 
+        $sql = "UPDATE url_checks SET status_code = :status_code,
         h1 = :h1, title = :title, description = :description WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
 
@@ -90,7 +90,7 @@ class UrlCheckRepository
 
     private function create(UrlCheckResult $check): void
     {
-        $sql = "INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at) 
+        $sql = "INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at)
         VALUES (:url_id, :status_code, :h1, :title, :description, :created_at)";
         $stmt = $this->conn->prepare($sql);
 
