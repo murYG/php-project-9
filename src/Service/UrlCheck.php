@@ -8,14 +8,14 @@ use GuzzleHttp\Exception\ConnectException;
 use DiDom\Document;
 use PageAnalyzer\Entity\Url;
 use PageAnalyzer\Entity\UrlCheckResult;
-use PageAnalyzer\Repository\UrlCheckRepository;
+use PageAnalyzer\Repository\UrlChecksRepository;
 
 class UrlCheck
 {
     private Url $url;
-    private UrlCheckRepository $repo;
+    private UrlChecksRepository $repo;
 
-    public function __construct(Url $url, UrlCheckRepository $repo)
+    public function __construct(Url $url, UrlChecksRepository $repo)
     {
         if (!$url->exists()) {
             throw new \Exception('url не записан');

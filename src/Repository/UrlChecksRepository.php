@@ -5,7 +5,7 @@ namespace PageAnalyzer\Repository;
 use PDO;
 use PageAnalyzer\Entity\UrlCheckResult;
 
-class UrlCheckRepository
+class UrlChecksRepository
 {
     private PDO $conn;
 

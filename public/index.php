@@ -10,7 +10,7 @@ use DI\Container;
 use PageAnalyzer\{
     Entity\Url,
     Repository\UrlRepository,
-    Repository\UrlCheckRepository,
+    Repository\UrlChecksRepository,
     Service\UrlValidator,
     Service\UrlCheck
 };
@@ -79,7 +79,7 @@ $app->get('/', function ($request, $response) {
 
 $app->get('/urls', function ($request, $response) {
     $urls = $this->get(UrlRepository::class)->getEntities();
-    $checks = $this->get(UrlCheckRepository::class)->findLatestChecks();
+    $checks = $this->get(UrlChecksRepository::class)->findLatestChecks();
 
     return $this->get('twig')($request)->render($response, 'urls/index.twig', ['urls' => $urls, 'checks' => $checks]);
 })->setName('urls'); //список urls
@@ -89,7 +89,7 @@ $app->get('/urls/{id:[0-9]+}', function ($request, $response, array $args) {
     if ($url === null) {
         throw new HttpNotFoundException($request);
     }
-    $check = $this->get(UrlCheckRepository::class)->getEntities($url->getId());
+    $check = $this->get(UrlChecksRepository::class)->getEntities($url->getId());
 
     $params = ['url' => $url, 'checks' => $check];
     return $this->get('twig')($request)->render($response, 'urls/show.twig', $params);
@@ -122,7 +122,7 @@ $app->post('/urls', function ($request, $response) use ($router) {
 
 $app->post('/urls/{url_id:[0-9]+}/checks', function ($request, $response, array $args) use ($router) {
     $url = $this->get(UrlRepository::class)->getById($args['url_id']);
-    $urlCheck = new UrlCheck($url, $this->get(UrlCheckRepository::class));
+    $urlCheck = new UrlCheck($url, $this->get(UrlChecksRepository::class));
 
     try {
         $urlCheck->check();
