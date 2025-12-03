@@ -1,4 +1,4 @@
-{% set navLinks = {
+{% set nav_links = {
         'main': {'title': 'Главная', 'path': url_for('main')},
         'urls': {'title': 'Сайты', 'path': url_for('urls')}
     } %}
@@ -19,9 +19,9 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav">
-                        {% for navLink in navLinks %}
+                        {% for nav_link in nav_links %}
                             <li class="nav-item">
-                                <a class="nav-link{% if navLink.path == current_url() %} active{% endif %}" href="{{ navLink.path }}">{{ navLink.title }}</a>
+                                <a class="nav-link{% if nav_link.path == current_url() %} active{% endif %}" href="{{ nav_link.path }}">{{ nav_link.title }}</a>
                             </li>
                         {% endfor %}
                     </ul>
@@ -31,21 +31,21 @@
         <main class="flex-grow-1">
             {% set flashMessages = flash.getMessages() %}
             {% if flashMessages.result is defined %}
-            <div class="alert alert-success" role="alert">
-            {% for message in flashMessages.result %}
-                {{ message }}
-            {% endfor %}
-            </div>
+				<div class="alert alert-success" role="alert">
+					{% for message in flashMessages.result %}
+						{{ message }}
+					{% endfor %}
+				</div>
             {% endif %}
             {% if flashMessages.errors is defined %}
-            <div class="alert alert-danger" role="alert">
-            {% for message in flashMessages.errors %}
-                {{ message }}
-            {% endfor %}
-            </div>
+				<div class="alert alert-danger" role="alert">
+					{% for message in flashMessages.errors %}
+						{{ message }}
+					{% endfor %}
+				</div>
             {% endif %}
             <div class="container-lg mt-3">
-            {% block body %}{% endblock %}
+				{% block body %}{% endblock %}
             </div>
         </main>
         <footer class="border-top py-3 mt-5 flex-shrink-0">

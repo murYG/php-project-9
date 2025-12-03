@@ -9,11 +9,11 @@
                 <label for="text" class="visually-hidden">Url для проверки</label>
                 <input type="text" name="url[name]" value="{{ url.name }}" class="form-control form-control-lg{% if flashMessages.validation is defined %} is-invalid{% endif %}" placeholder="https://www.example.com" />
                 {% if flashMessages.validation is defined %}
-                <div class="invalid-feedback">
-                {% for message in flashMessages.validation %}
-                    {{ message }}
-                {% endfor %}
-                </div>
+					<div class="invalid-feedback">
+						{% for message in flashMessages.validation %}
+							{{ message }}
+						{% endfor %}
+					</div>
                 {% endif %}
             </div>
             <div class="col-2">

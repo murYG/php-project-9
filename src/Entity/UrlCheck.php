@@ -4,7 +4,7 @@ namespace PageAnalyzer\Entity;
 
 use Carbon\Carbon;
 
-class UrlCheckResult
+class UrlCheck
 {
     private ?int $id = null;
     private int $url_id;
@@ -34,10 +34,10 @@ class UrlCheckResult
         ?string $title,
         ?string $description,
         string $created_at
-    ): UrlCheckResult {
+    ): UrlCheck {
         $checkResult = compact('status_code', 'h1', 'title', 'description');
 
-        $check = new UrlCheckResult($url_id, $created_at, $checkResult);
+        $check = new self($url_id, $created_at, $checkResult);
         $check->setId($id);
 
         return $check;

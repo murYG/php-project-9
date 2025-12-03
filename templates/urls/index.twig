@@ -12,23 +12,23 @@
             </tr>
         </thead>
         <tbody>
-        {% for url in urls %}
-		{% set urlId = url.getId() %}
-        {% if checks[ urlId ] is defined %}
-        {% set lastCheck = {
-            'createdAt': checks[ urlId ].getCreatedAt(),
-            'statusCode': checks[ urlId ].getStatusCode()
-        } %}
-        {% else %}
-        {% set lastCheck = {'createdAt': '', 'statusCode': ''} %}
-        {% endif %}
-        <tr>
-            <td>{{ urlId }}</td>
-            <td><a href="{{ url_for('url', {'id': urlId}) }}">{{ url.getName() }}</a></td>
-            <td>{{ lastCheck.createdAt }}</td>
-            <td>{{ lastCheck.statusCode }}</td>
-        </tr>
-        {% endfor %}
+			{% for url in urls %}
+				{% set url_id = url.getId() %}
+				{% if checks[ url_id ] is defined %}
+					{% set last_check = {
+						'createdAt': checks[ url_id ].getCreatedAt(),
+						'statusCode': checks[ url_id ].getStatusCode()
+					} %}
+				{% else %}
+					{% set last_check = {'createdAt': '', 'statusCode': ''} %}
+				{% endif %}
+				<tr>
+					<td>{{ url_id }}</td>
+					<td><a href="{{ url_for('url', {'id': url_id}) }}">{{ url.getName() }}</a></td>
+					<td>{{ last_check.createdAt }}</td>
+					<td>{{ last_check.statusCode }}</td>
+				</tr>
+			{% endfor %}
         </tbody>
     </table>
 </div>

@@ -7,10 +7,10 @@ use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\ConnectException;
 use DiDom\Document;
 use PageAnalyzer\Entity\Url;
-use PageAnalyzer\Entity\UrlCheckResult;
+use PageAnalyzer\Entity\UrlCheck;
 use PageAnalyzer\Repository\UrlChecksRepository;
 
-class UrlCheck
+class UrlChecker
 {
     private Url $url;
     private UrlChecksRepository $repo;
@@ -55,7 +55,7 @@ class UrlCheck
             $checkResult['description'] = $description->getAttribute('content');
         }
 
-        $check = new UrlCheckResult((int)$this->url->getId(), null, $checkResult);
+        $check = new UrlCheck((int)$this->url->getId(), null, $checkResult);
         $this->repo->save($check);
     }
 }

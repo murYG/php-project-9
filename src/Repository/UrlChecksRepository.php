@@ -3,7 +3,7 @@
 namespace PageAnalyzer\Repository;
 
 use PDO;
-use PageAnalyzer\Entity\UrlCheckResult;
+use PageAnalyzer\Entity\UrlCheck;
 
 class UrlChecksRepository
 {
@@ -21,7 +21,7 @@ class UrlChecksRepository
         $stmt->bindParam(':url_id', $url_id);
         $stmt->execute();
 
-        $result = $stmt->fetchAll(PDO::FETCH_FUNC, [UrlCheckResult::class, 'fromDataBaseRow']);
+        $result = $stmt->fetchAll(PDO::FETCH_FUNC, [UrlCheck::class, 'fromDataBaseRow']);
         return $result;
     }
 
@@ -36,11 +36,11 @@ class UrlChecksRepository
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
 
-        $result = $stmt->fetchAll(PDO::FETCH_FUNC | PDO::FETCH_GROUP, [UrlCheckResult::class, 'fromDataBaseRow']);
+        $result = $stmt->fetchAll(PDO::FETCH_FUNC | PDO::FETCH_GROUP, [UrlCheck::class, 'fromDataBaseRow']);
         return array_combine(array_keys($result), array_column($result, 0));
     }
 
-    public function find(int $id): ?UrlCheckResult
+    public function find(int $id): ?UrlCheck
     {
         $sql = "SELECT * FROM url_checks WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
@@ -50,7 +50,7 @@ class UrlChecksRepository
         if ($row = $stmt->fetch()) {
             $checResultKeys = ['status_code' => '', 'h1' => '', 'title' => '', 'description' => ''];
             $checkResult = array_intersect_key($row, $checResultKeys);
-            $check = new UrlCheckResult($row['url_id'], $row['created_at'], $checkResult);
+            $check = new UrlCheck($row['url_id'], $row['created_at'], $checkResult);
             $check->setId($row['id']);
 
             return $check;
@@ -59,7 +59,7 @@ class UrlChecksRepository
         return null;
     }
 
-    public function save(UrlCheckResult $check): void
+    public function save(UrlCheck $check): void
     {
         if ($check->exists()) {
             $this->update($check);
@@ -68,7 +68,7 @@ class UrlChecksRepository
         }
     }
 
-    private function update(UrlCheckResult $check): void
+    private function update(UrlCheck $check): void
     {
         $sql = "UPDATE url_checks SET status_code = :status_code,
         h1 = :h1, title = :title, description = :description WHERE id = :id";
@@ -88,7 +88,7 @@ class UrlChecksRepository
         $stmt->execute();
     }
 
-    private function create(UrlCheckResult $check): void
+    private function create(UrlCheck $check): void
     {
         $sql = "INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at)
         VALUES (:url_id, :status_code, :h1, :title, :description, :created_at)";

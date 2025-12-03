@@ -12,7 +12,7 @@ use PageAnalyzer\{
     Repository\UrlRepository,
     Repository\UrlChecksRepository,
     Service\UrlValidator,
-    Service\UrlCheck
+    Service\UrlChecker
 };
 
 session_start();
@@ -122,10 +122,10 @@ $app->post('/urls', function ($request, $response) use ($router) {
 
 $app->post('/urls/{url_id:[0-9]+}/checks', function ($request, $response, array $args) use ($router) {
     $url = $this->get(UrlRepository::class)->getById($args['url_id']);
-    $urlCheck = new UrlCheck($url, $this->get(UrlChecksRepository::class));
+    $UrlChecker = new UrlChecker($url, $this->get(UrlChecksRepository::class));
 
     try {
-        $urlCheck->check();
+        $UrlChecker->check();
         $this->get('flash')->addMessage('result', 'Страница успешно проверена');
     } catch (\RuntimeException $e) {
         $this->get('flash')->addMessage('errors', $e->getMessage());

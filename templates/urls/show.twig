@@ -35,16 +35,16 @@
     </tr>
     </thead>
     <tbody>
-    {% for check in checks %}
-    <tr>
-        <td>{{ check.getId() }}</td>
-        <td>{{ check.getStatusCode() }}</td>
-        <td class="text-break">{{ check.getH1() }}</td>
-        <td class="text-break">{{ check.getTitle() }}</td>
-        <td class="text-break">{{ check.getDescription() }}</td>
-        <td>{{ check.getCreatedAt() }}</td>
-    </tr>
-    {% endfor %}
+		{% for check in checks %}
+			<tr>
+				<td>{{ check.getId() }}</td>
+				<td>{{ check.getStatusCode() }}</td>
+				<td class="text-break">{{ check.getH1() }}</td>
+				<td class="text-break">{{ check.getTitle() }}</td>
+				<td class="text-break">{{ check.getDescription() }}</td>
+				<td>{{ check.getCreatedAt() }}</td>
+			</tr>
+		{% endfor %}
     </tbody>
 </table>
 {% endblock %}
